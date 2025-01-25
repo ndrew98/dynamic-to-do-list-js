@@ -1,20 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Select DOM elements
+  // Selecting the required DOM elements
   const addButton = document.getElementById('add-task-btn');
   const taskInput = document.getElementById('task-input');
   const taskList = document.getElementById('task-list');
 
-  // Function to add a new task
-  function addTask() {
-      // Trim and validate task input
-      const taskText = taskInput.value.trim();
-      
-      if (taskText === '') {
-          alert('Please enter a task');
-          return;
-      }
+  // Loading tasks from Local Storage
+  function loadTasks() {
+      const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+      storedTasks.forEach(taskText => createTaskElement(taskText));
+  }
 
-      // Create list item and remove button
+  // Creating task element
+  function createTaskElement(taskText) {
       const listItem = document.createElement('li');
       listItem.textContent = taskText;
 
@@ -22,28 +19,52 @@ document.addEventListener('DOMContentLoaded', function() {
       removeButton.textContent = 'Remove';
       removeButton.classList.add('remove-btn');
       
-      // Add remove functionality
+      // Remove task from DOM and Local Storage
       removeButton.onclick = function() {
           taskList.removeChild(listItem);
+          removeTaskFromStorage(taskText);
       };
 
-      // Append remove button to list item
       listItem.appendChild(removeButton);
-      
-      // Add list item to task list
       taskList.appendChild(listItem);
+  }
 
-      // Clear input field
+  // Add new task
+  function addTask() {
+      const taskText = taskInput.value.trim();
+      
+      if (taskText === '') {
+          alert('Please enter a task');
+          return;
+      }
+
+      // Create task element
+      createTaskElement(taskText);
+
+      // Save to Local Storage
+      const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+      storedTasks.push(taskText);
+      localStorage.setItem('tasks', JSON.stringify(storedTasks));
+
+      // Clear input
       taskInput.value = '';
   }
 
-  // Event listener for add button
-  addButton.addEventListener('click', addTask);
+  // Removing task from Local Storage
+  function removeTaskFromStorage(taskToRemove) {
+      const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+      const updatedTasks = storedTasks.filter(task => task !== taskToRemove);
+      localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+  }
 
-  // Event listener for enter key in input
+  // Event listeners
+  addButton.addEventListener('click', addTask);
   taskInput.addEventListener('keypress', function(event) {
       if (event.key === 'Enter') {
           addTask();
       }
   });
+
+  // Load existing tasks on page load
+  loadTasks();
 });
